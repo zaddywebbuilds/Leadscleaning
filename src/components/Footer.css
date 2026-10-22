@@ -1,0 +1,104 @@
+.footer {
+  background: var(--graphite);
+  color: var(--limestone);
+  padding-top: 5rem;
+}
+
+.footer__inner {
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  gap: 4rem;
+  padding-bottom: 4rem;
+}
+
+.footer__wordmark {
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  font-weight: 400;
+  color: var(--ivory);
+  display: block;
+  margin-bottom: 0.75rem;
+}
+
+.footer__tagline {
+  font-size: 0.875rem;
+  color: rgba(234,230,219,0.6);
+  line-height: 1.6;
+  margin-bottom: 1.25rem;
+  max-width: 260px;
+}
+
+.footer__phone {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--bronze);
+  letter-spacing: 0.05em;
+  transition: color 0.3s;
+}
+.footer__phone:hover { color: var(--bronze-light); }
+
+.footer__nav {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 2rem;
+}
+
+.footer__nav-col {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.footer__nav-heading {
+  font-size: 0.65rem;
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--bronze);
+  margin-bottom: 0.25rem;
+}
+
+.footer__nav a {
+  font-size: 0.825rem;
+  color: rgba(234,230,219,0.7);
+  transition: color 0.3s;
+}
+.footer__nav a:hover { color: var(--ivory); }
+
+.footer__bottom {
+  border-top: 1px solid rgba(255,255,255,0.08);
+  padding: 1.5rem 0;
+}
+
+.footer__bottom-inner {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.footer__legal {
+  font-size: 0.75rem;
+  color: rgba(234,230,219,0.4);
+}
+
+.footer__legal-links {
+  display: flex;
+  gap: 1.5rem;
+}
+.footer__legal-links a {
+  font-size: 0.75rem;
+  color: rgba(234,230,219,0.4);
+  transition: color 0.3s;
+}
+.footer__legal-links a:hover { color: var(--limestone); }
+
+@media (max-width: 768px) {
+  .footer__inner {
+    grid-template-columns: 1fr;
+    gap: 2.5rem;
+  }
+  .footer__nav { grid-template-columns: repeat(2, 1fr); }
+  .footer__bottom-inner { flex-direction: column; align-items: flex-start; }
+}

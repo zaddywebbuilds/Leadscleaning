@@ -1,0 +1,43 @@
+.about-story { padding: clamp(5rem, 8vw, 9rem) 0; background: var(--ivory); }
+.about-story__inner { display: grid; grid-template-columns: 1fr 1fr; gap: 5rem; align-items: center; }
+.about-story__heading { font-size: clamp(1.8rem, 3vw, 2.75rem); color: var(--evergreen); margin: 1rem 0 1.75rem; }
+.about-story__text p { font-size: 1rem; color: var(--text-muted); line-height: 1.8; margin-bottom: 1.1rem; }
+
+.about-story__photo-stack { position: relative; }
+.about-story__photo { border-radius: var(--radius-lg); object-fit: cover; }
+.about-story__photo--main { width: 100%; aspect-ratio: 4/3; }
+.about-story__photo--accent {
+  position: absolute;
+  bottom: -2rem;
+  left: -2rem;
+  width: 45%;
+  aspect-ratio: 1;
+  border: 4px solid var(--ivory);
+  box-shadow: 0 8px 32px rgba(24,61,56,0.15);
+}
+
+.about-values { padding: clamp(5rem, 8vw, 9rem) 0; background: var(--limestone); }
+.about-values__heading { font-size: clamp(1.8rem, 3vw, 2.75rem); color: var(--evergreen); margin: 1rem 0 3rem; text-align: center; }
+.about-values__grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 2rem; }
+.about-value {
+  background: var(--ivory);
+  border-radius: var(--radius-lg);
+  padding: 2.25rem;
+  border-top: 3px solid var(--evergreen);
+}
+.about-value__num { font-family: var(--font-display); font-size: 2.5rem; font-weight: 300; color: var(--bronze); opacity: 0.4; margin-bottom: 0.75rem; }
+.about-value__title { font-size: 1.15rem; color: var(--evergreen); margin-bottom: 0.75rem; }
+.about-value__desc { font-size: 0.875rem; color: var(--text-muted); line-height: 1.7; }
+
+.about-photo-row { padding: clamp(4rem, 7vw, 8rem) 0; background: var(--ivory); }
+.about-photo-row__grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; }
+.about-photo-fig { margin: 0; }
+.about-photo-fig__img { width: 100%; aspect-ratio: 4/3; object-fit: cover; border-radius: var(--radius-lg); }
+.about-photo-fig__cap { font-size: 0.775rem; color: var(--text-muted); font-style: italic; margin-top: 0.75rem; text-align: center; }
+
+@media (max-width: 768px) {
+  .about-story__inner { grid-template-columns: 1fr; gap: 3rem; }
+  .about-story__photo--accent { display: none; }
+  .about-values__grid { grid-template-columns: 1fr; }
+  .about-photo-row__grid { grid-template-columns: 1fr; }
+}
