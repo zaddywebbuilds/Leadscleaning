@@ -1,5 +1,5 @@
 .qhero { max-width: 44rem; }
-.quote-page .page-hero { padding-bottom: var(--sp-sm); }
+.quote-page .page-hero { padding-bottom: var(--sp-sm-end); }
 
 /* ── Progress ── */
 .qprog {

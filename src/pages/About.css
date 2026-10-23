@@ -42,22 +42,22 @@
   .story__photos { padding-bottom: 2.5rem; padding-right: 2rem; }
 }
 
-/* ── Values ── */
-.values__grid {
-  display: grid;
-  grid-template-columns: 0.75fr 1.25fr;
-  gap: clamp(2rem, 5vw, 5rem);
-  align-items: start;
-}
-
-.values__aside { position: sticky; top: calc(var(--nav-h) + 3rem); }
+/* ── Values ──
+   The heading runs above the list rather than in a sticky column beside it: a
+   short aside against four long entries left most of that column empty. */
+.values__head { margin-bottom: clamp(2rem, 3.5vw, 3rem); }
 
 .values__heading {
   font-size: var(--fs-h2-quiet);
   color: var(--ivory);
 }
 
-.values__list { list-style: none; }
+.values__list {
+  list-style: none;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0 clamp(2.5rem, 5vw, 4.5rem);
+}
 
 .values__item {
   display: grid;
@@ -66,8 +66,9 @@
   padding: 1.75rem 0;
   border-bottom: 1px solid var(--border-on-dark);
 }
-.values__list > div:last-child .values__item { border-bottom: none; padding-bottom: 0; }
-.values__list > div:first-child .values__item { padding-top: 0; }
+/* Two per row: the top pair loses its leading pad, the bottom pair its rule. */
+.values__list > div:nth-child(-n+2) .values__item { padding-top: 0; }
+.values__list > div:nth-child(n+3) .values__item { border-bottom: none; padding-bottom: 0; }
 
 .values__num {
   font-family: var(--font-display);
@@ -90,9 +91,13 @@
   max-width: 54ch;
 }
 
-@media (max-width: 860px) {
-  .values__grid { grid-template-columns: 1fr; gap: 1.75rem; }
-  .values__aside { position: static; }
+@media (max-width: 760px) {
+  .values__list { grid-template-columns: 1fr; }
+  .values__list > div:nth-child(2) .values__item { padding-top: 1.75rem; }
+  .values__list > div:nth-child(3) .values__item {
+    border-bottom: 1px solid var(--border-on-dark);
+    padding-bottom: 1.75rem;
+  }
 }
 
 /* ── Gallery ── */

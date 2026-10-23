@@ -37,22 +37,6 @@ export default function Results() {
 
       <section className="gallery surf-forest sec-trail">
         <div className="container">
-          <ScrollReveal>
-            <div className="gallery__tabs" role="tablist" aria-label="Choose a room">
-              {comparisons.map(c => (
-                <button
-                  key={c.id}
-                  role="tab"
-                  aria-selected={active === c.id}
-                  className={`gallery__tab${active === c.id ? ' gallery__tab--active' : ''}`}
-                  onClick={() => setActive(c.id)}
-                >
-                  {c.label}
-                </button>
-              ))}
-            </div>
-          </ScrollReveal>
-
           <ScrollReveal delay={80} className="gallery__stage">
             <div className="gallery__slider">
               <BeforeAfterSlider
@@ -68,6 +52,19 @@ export default function Results() {
             </div>
 
             <div className="gallery__meta">
+              <div className="gallery__tabs" role="tablist" aria-label="Choose a room">
+                {comparisons.map(c => (
+                  <button
+                    key={c.id}
+                    role="tab"
+                    aria-selected={active === c.id}
+                    className={`gallery__tab${active === c.id ? ' gallery__tab--active' : ''}`}
+                    onClick={() => setActive(c.id)}
+                  >
+                    {c.label}
+                  </button>
+                ))}
+              </div>
               <h2 className="gallery__meta-title">{current.label}</h2>
               <p className="gallery__meta-note">{current.note}</p>
               <p className="gallery__hint">

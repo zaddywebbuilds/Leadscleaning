@@ -23,7 +23,7 @@
   --font-sans: 'Manrope', system-ui, -apple-system, sans-serif;
 
   /* Deliberate scale — sections do NOT share one heading size */
-  --fs-display: clamp(2.6rem, 5.4vw, 4.75rem);
+  --fs-display: clamp(2.4rem, 4.6vw, 4rem);
   --fs-h1: clamp(2.1rem, 4.2vw, 3.5rem);
   --fs-h2-major: clamp(1.9rem, 3.4vw, 3rem);
   --fs-h2: clamp(1.6rem, 2.5vw, 2.3rem);
@@ -33,11 +33,20 @@
   --fs-body: 0.95rem;
   --fs-small: 0.84rem;
 
-  /* ── Spacing scale — varied section rhythm ── */
+  /* ── Spacing scale — varied section rhythm ──
+     Leading space sets a section's weight and stays varied. Trailing space is
+     deliberately much smaller: at a seam the two paddings sit back to back, and
+     two full-size values summed into a dead band across the colour change. The
+     next section's leading space now carries the seam on its own. */
   --sp-xl: clamp(6rem, 9.5vw, 9.5rem);
   --sp-lg: clamp(4.5rem, 7vw, 7rem);
   --sp-md: clamp(3.5rem, 5vw, 5.25rem);
   --sp-sm: clamp(2.5rem, 3.5vw, 3.75rem);
+
+  --sp-xl-end: clamp(2.25rem, 3.35vw, 3.5rem);
+  --sp-lg-end: clamp(1.75rem, 2.5vw, 2.5rem);
+  --sp-md-end: clamp(1.25rem, 1.8vw, 2rem);
+  --sp-sm-end: clamp(1rem, 1.25vw, 1.5rem);
 
   --gutter: clamp(1.25rem, 5vw, 3rem);
   --maxw: 1240px;
@@ -111,14 +120,18 @@ em { font-style: italic; }
 .container--narrow { max-width: var(--maxw-narrow); }
 
 /* Section rhythm utilities — apply deliberately, never uniformly */
-.sec-xl { padding: var(--sp-xl) 0; }
-.sec-lg { padding: var(--sp-lg) 0; }
-.sec-md { padding: var(--sp-md) 0; }
-.sec-sm { padding: var(--sp-sm) 0; }
+.sec-xl { padding: var(--sp-xl) 0 var(--sp-xl-end); }
+.sec-lg { padding: var(--sp-lg) 0 var(--sp-lg-end); }
+.sec-md { padding: var(--sp-md) 0 var(--sp-md-end); }
+.sec-sm { padding: var(--sp-sm) 0 var(--sp-sm-end); }
 
 /* Asymmetric rhythm: generous above, tighter below (or vice versa) */
-.sec-lead { padding: var(--sp-lg) 0 var(--sp-md); }
-.sec-trail { padding: var(--sp-md) 0 var(--sp-lg); }
+.sec-lead { padding: var(--sp-lg) 0 var(--sp-md-end); }
+.sec-trail { padding: var(--sp-md) 0 var(--sp-lg-end); }
+
+/* The last section before the footer has no following leading space to lean
+   on, so it keeps a fuller base. */
+main > section:last-of-type { padding-bottom: var(--sp-md); }
 
 /* Surfaces */
 .surf-ivory { background: var(--ivory); }
@@ -226,13 +239,27 @@ em { font-style: italic; }
 }
 .ph--zoom:hover img { transform: scale(1.035); }
 
-/* Aspect ratios used as art direction */
-.ar-portrait { aspect-ratio: 3 / 4; }
-.ar-tall     { aspect-ratio: 4 / 5; }
-.ar-square   { aspect-ratio: 1 / 1; }
-.ar-landscape{ aspect-ratio: 4 / 3; }
-.ar-wide     { aspect-ratio: 3 / 2; }
-.ar-cinema   { aspect-ratio: 16 / 9; }
+/* Aspect ratios used as art direction.
+   Source photography is 502×332; object-fit:cover magnifies whenever a box is
+   taller than that ratio, so each box also carries the widest size it can take
+   before the image is scaled past 1:1 — min(502, 332 × ratio). Layouts size
+   their media column to the matching --ar-* token so the cap never leaves a
+   gap beside the picture. */
+:root {
+  --ar-wide-w: 502px;
+  --ar-cinema-w: 502px;
+  --ar-landscape-w: 442px;
+  --ar-square-w: 332px;
+  --ar-tall-w: 265px;
+  --ar-portrait-w: 249px;
+}
+
+.ar-portrait { aspect-ratio: 3 / 4;     max-width: var(--ar-portrait-w); }
+.ar-tall     { aspect-ratio: 4 / 5;     max-width: var(--ar-tall-w); }
+.ar-square   { aspect-ratio: 1 / 1;     max-width: var(--ar-square-w); }
+.ar-landscape{ aspect-ratio: 4 / 3;     max-width: var(--ar-landscape-w); }
+.ar-wide     { aspect-ratio: 502 / 332; max-width: var(--ar-wide-w); }
+.ar-cinema   { aspect-ratio: 16 / 9;    max-width: var(--ar-cinema-w); }
 
 /* ════ Scroll reveal ════ */
 .reveal {
@@ -259,7 +286,7 @@ section[id] { scroll-margin-top: calc(var(--nav-h) + 1.5rem); }
 /* ════ Shared page hero (inner pages) ════ */
 .page-hero {
   padding-top: calc(var(--nav-h) + var(--sp-md));
-  padding-bottom: var(--sp-md);
+  padding-bottom: var(--sp-md-end);
 }
 .page-hero__eyebrow { color: var(--bronze); }
 .page-hero__title {
@@ -278,9 +305,11 @@ section[id] { scroll-margin-top: calc(var(--nav-h) + 1.5rem); }
 .surf-evergreen .page-hero__sub, .surf-forest .page-hero__sub { color: var(--text-on-dark); }
 
 /* Split variant — text left, contained photo panel right */
+/* The panel column is exactly as wide as the capped photograph, so its border
+   frames the picture instead of enclosing empty space beside it. */
 .page-hero--split .page-hero__grid {
   display: grid;
-  grid-template-columns: 1fr 0.92fr;
+  grid-template-columns: 1fr var(--ar-landscape-w);
   gap: clamp(2rem, 5vw, 4rem);
   align-items: center;
 }
@@ -291,11 +320,11 @@ section[id] { scroll-margin-top: calc(var(--nav-h) + 1.5rem); }
 
 @media (max-width: 860px) {
   .page-hero--split .page-hero__grid { grid-template-columns: 1fr; gap: 2.25rem; }
-  .page-hero--split .page-hero__panel { max-width: 460px; }
+  .page-hero--split .page-hero__panel { max-width: var(--ar-landscape-w); }
 }
 
 /* ════ Shared closing CTA (inner pages) ════ */
-.page-cta { padding: var(--sp-lg) 0; }
+.page-cta { padding: var(--sp-lg) 0 var(--sp-lg-end); }
 /* Constrain the content, not the .container itself — setting max-width on an
    element that is also .container re-centres it and misaligns it with the page. */
 .page-cta__inner > * { max-width: 640px; }

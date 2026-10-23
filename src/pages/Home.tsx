@@ -120,15 +120,15 @@ export default function Home() {
                 <Link to="/quote" className="btn btn-bronze">Request Your Free Quote</Link>
                 <Link to="/services" className="btn btn-ghost">Explore Our Services</Link>
               </div>
-              <div className="hero__meta">
-                <span>Houses · Apartments · Recurring</span>
-                <a href="tel:+14036070581">+1 403-607-0581</a>
-              </div>
             </div>
           </div>
 
           <div className="hero__panel">
             <Photo name="hero-calgary-living-room" alt="A calm, beautifully maintained Calgary living room" eager className="hero__photo" />
+            <div className="hero__meta">
+              <span>Houses · Apartments · Recurring</span>
+              <a href="tel:+14036070581">+1 403-607-0581</a>
+            </div>
           </div>
         </div>
       </section>
@@ -137,7 +137,7 @@ export default function Home() {
       <section className="editorial surf-ivory sec-xl" aria-label="A little more time for what matters">
         <div className="container editorial__grid">
           <ScrollReveal className="editorial__photo">
-            <Photo name="calgary-entryway" alt="Sunlit entryway of a cared-for Calgary home" className="ph--zoom ar-tall" />
+            <Photo name="calgary-entryway" alt="Sunlit entryway of a cared-for Calgary home" className="ph--zoom ar-wide" />
           </ScrollReveal>
 
           <ScrollReveal delay={140} className="editorial__text">
@@ -211,12 +211,7 @@ export default function Home() {
 
       {/* ═══ 4 · Before & After — featured comparison on forest ═══ */}
       <section className="difference surf-forest sec-lg" aria-label="Before and after comparisons">
-        <div className="container">
-          <ScrollReveal className="difference__head">
-            <span className="eyebrow">A Visible Difference</span>
-            <h2 className="difference__heading">The Difference Is<br /><em>in the Details.</em></h2>
-          </ScrollReveal>
-
+        <div className="container difference__grid">
           <ScrollReveal delay={100} className="difference__stage">
             <BeforeAfterSlider
               key={activeComp}
@@ -229,25 +224,36 @@ export default function Home() {
             />
           </ScrollReveal>
 
-          <ScrollReveal delay={140}>
-            <div className="difference__selector" role="tablist" aria-label="Choose a room to compare">
-              {comparisons.map(c => (
-                <button
-                  key={c.id}
-                  role="tab"
-                  aria-selected={activeComp === c.id}
-                  className={`difference__thumb${activeComp === c.id ? ' difference__thumb--active' : ''}`}
-                  onClick={() => setActiveComp(c.id)}
-                >
-                  <img src={BA(`${c.id}-after`)} alt="" aria-hidden="true" loading="lazy" />
-                  <span>{c.label}</span>
-                </button>
-              ))}
-            </div>
-            <p className="disclosure difference__disclosure">
-              Illustrative concept images, not customer projects.
-            </p>
-          </ScrollReveal>
+          <div className="difference__aside">
+            <ScrollReveal className="difference__head">
+              <span className="eyebrow">A Visible Difference</span>
+              <h2 className="difference__heading">The Difference Is<br /><em>in the Details.</em></h2>
+              <p className="difference__lead">
+                Drag the handle to see the same room before and after a clean.
+                Choose a room below to compare.
+              </p>
+            </ScrollReveal>
+
+            <ScrollReveal delay={140}>
+              <div className="difference__selector" role="tablist" aria-label="Choose a room to compare">
+                {comparisons.map(c => (
+                  <button
+                    key={c.id}
+                    role="tab"
+                    aria-selected={activeComp === c.id}
+                    className={`difference__thumb${activeComp === c.id ? ' difference__thumb--active' : ''}`}
+                    onClick={() => setActiveComp(c.id)}
+                  >
+                    <img src={BA(`${c.id}-after`)} alt="" aria-hidden="true" loading="lazy" />
+                    <span>{c.label}</span>
+                  </button>
+                ))}
+              </div>
+              <p className="disclosure difference__disclosure">
+                Illustrative concept images, not customer projects.
+              </p>
+            </ScrollReveal>
+          </div>
         </div>
       </section>
 
@@ -264,7 +270,7 @@ export default function Home() {
               <div className="process__stack">
                 {steps.map((s, i) => (
                   <div key={s.n} className={`process__frame${activeStep === i ? ' process__frame--active' : ''}`}>
-                    <Photo name={s.img} alt="" className="ar-tall" />
+                    <Photo name={s.img} alt="" className="ar-wide" />
                   </div>
                 ))}
               </div>

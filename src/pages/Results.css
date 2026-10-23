@@ -3,15 +3,17 @@
 .results-page .page-hero { padding-bottom: var(--sp-sm); }
 .results-hero { max-width: 44rem; }
 
-.gallery { padding-top: 0; padding-bottom: var(--sp-lg); }
+.gallery { padding-top: 0; padding-bottom: var(--sp-lg-end); }
 
 /* ── Tabs ── */
+/* Sits in the meta column beside the slider: as a full-width strip above it,
+   the column beside the 503px-tall picture was left largely empty. */
 .gallery__tabs {
   display: flex;
   gap: 0.5rem;
   flex-wrap: wrap;
-  margin-bottom: clamp(1.5rem, 2.5vw, 2.25rem);
-  padding-bottom: 1.25rem;
+  margin-bottom: 1.75rem;
+  padding-bottom: 1.5rem;
   border-bottom: 1px solid var(--border-on-dark);
 }
 
@@ -34,15 +36,19 @@
   color: var(--forest);
 }
 
-/* ── Stage ── */
+/* ── Stage ──
+   380px is the native width of the before/after frames; the meta column takes
+   the rest so holding the picture to 1:1 leaves no slack beside it. */
 .gallery__stage {
   display: grid;
-  grid-template-columns: 1.85fr 1fr;
+  grid-template-columns: 380px 1fr;
   gap: clamp(1.75rem, 4vw, 3.5rem);
-  align-items: start;
+  align-items: center;
 }
 
-.gallery__meta { padding-top: 0.25rem; }
+.gallery__slider { width: 380px; }
+
+.gallery__meta { max-width: 46rem; }
 
 .gallery__meta-title {
   font-size: var(--fs-h2-quiet);
@@ -71,7 +77,11 @@
   border-top: 1px solid var(--border-on-dark);
 }
 
-@media (max-width: 900px) {
-  .gallery__stage { grid-template-columns: 1fr; gap: 1.5rem; }
+@media (max-width: 820px) {
+  .gallery__stage { grid-template-columns: 1fr; gap: 1.5rem; justify-items: start; }
   .gallery__meta { padding-top: 0; }
+}
+
+@media (max-width: 440px) {
+  .gallery__slider { width: 100%; }
 }

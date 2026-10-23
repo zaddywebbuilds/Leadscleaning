@@ -60,7 +60,7 @@ export default function About() {
           </ScrollReveal>
 
           <ScrollReveal delay={140} className="story__photos">
-            <Photo name="cleaning-supplies" alt="Cleaning supplies prepared ahead of a visit" className="story__photo-main ar-tall" />
+            <Photo name="cleaning-supplies" alt="Cleaning supplies prepared ahead of a visit" className="story__photo-main ar-wide" />
             <Photo name="faucet-detail" alt="Close detail of a polished tap" className="story__photo-inset ar-square" />
           </ScrollReveal>
         </div>
@@ -68,10 +68,10 @@ export default function About() {
 
       {/* Values — editorial numbered list, not cards */}
       <section className="values surf-evergreen sec-lg">
-        <div className="container values__grid">
-          <ScrollReveal className="values__aside">
+        <div className="container">
+          <ScrollReveal className="values__head">
             <span className="eyebrow">What Guides Us</span>
-            <h2 className="values__heading">Our values,<br />in practice.</h2>
+            <h2 className="values__heading">Our values, in practice.</h2>
           </ScrollReveal>
 
           <ol className="values__list">

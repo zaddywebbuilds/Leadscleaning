@@ -1,9 +1,11 @@
 .baf { margin: 0; }
 
+/* Native frame size — cropping to a landscape box both magnified the 380×503
+   source and threw away most of the room. */
 .baf__track {
   position: relative;
   width: 100%;
-  aspect-ratio: 3 / 2;
+  aspect-ratio: 380 / 503;
   overflow: hidden;
   background: var(--limestone);
   cursor: ew-resize;
@@ -95,7 +97,6 @@
 }
 
 @media (max-width: 640px) {
-  .baf__track { aspect-ratio: 4 / 3; }
   .baf__knob { width: 40px; height: 40px; }
   .baf__tag { font-size: 0.56rem; padding: 0.32rem 0.6rem; top: 0.7rem; }
   .baf__tag--before { left: 0.7rem; }

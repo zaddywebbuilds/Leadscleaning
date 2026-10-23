@@ -90,7 +90,7 @@ export default function Services() {
         >
           <div className={`container svc__grid${i % 2 !== 0 ? ' svc__grid--reverse' : ''}`}>
             <ScrollReveal className="svc__photo">
-              <Photo name={s.img} alt={s.alt} className="ph--zoom ar-tall" />
+              <Photo name={s.img} alt={s.alt} className="ph--zoom ar-wide" />
             </ScrollReveal>
 
             <ScrollReveal delay={120} className="svc__text">

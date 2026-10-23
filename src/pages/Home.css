@@ -11,19 +11,21 @@
   overflow: hidden;
 }
 
+/* The panel column is exactly the widest the 502px source can fill, so the
+   photograph meets the right edge of the grid with no slack beside it. */
 .hero__grid {
   display: grid;
-  grid-template-columns: 1.08fr 0.92fr;
-  min-height: clamp(580px, 84vh, 800px);
+  grid-template-columns: 1fr var(--ar-wide-w);
+  min-height: clamp(420px, 58vh, 520px);
 }
 
 .hero__field {
   display: flex;
   align-items: center;
-  padding: calc(var(--nav-h) + var(--sp-sm)) clamp(2rem, 4vw, 4rem) var(--sp-sm) var(--edge);
+  padding: calc(var(--nav-h) + var(--sp-sm)) clamp(2rem, 4vw, 4rem) var(--sp-sm-end) var(--edge);
 }
 
-.hero__field-inner { max-width: 33rem; }
+.hero__field-inner { max-width: 40rem; }
 
 .hero__headline {
   font-size: var(--fs-display);
@@ -46,15 +48,18 @@
   display: flex;
   gap: 0.9rem;
   flex-wrap: wrap;
-  margin-bottom: 2.75rem;
 }
 
+/* Sits under the photograph inside the panel column: the picture tops out at
+   its native 332px, and the meta strip occupies the column below it instead
+   of leaving bare evergreen there. */
 .hero__meta {
   display: flex;
   align-items: center;
+  justify-content: space-between;
   gap: 1.5rem;
   flex-wrap: wrap;
-  padding-top: 1.6rem;
+  padding: 1.1rem clamp(1rem, 2vw, 1.5rem);
   border-top: 1px solid var(--border-on-dark);
   font-size: 0.76rem;
   letter-spacing: 0.1em;
@@ -64,32 +69,38 @@
 .hero__meta a { color: var(--bronze); font-weight: 700; }
 .hero__meta a:hover { color: var(--bronze-light); }
 
-/* Contained photo panel */
+/* Contained photo panel. The picture is held at its native 502×332 and
+   centred against the evergreen, which frames it as a deliberate panel —
+   stretching it to the full column height would magnify it past 1:1. */
 .hero__panel {
   position: relative;
   display: flex;
-  padding: var(--sp-sm) 0 var(--sp-sm) 0;
+  flex-direction: column;
+  justify-content: center;
+  border-left: 1px solid var(--border-on-dark);
 }
 .hero__photo {
   width: 100%;
-  height: 100%;
-  border-left: 1px solid var(--border-on-dark);
+  aspect-ratio: 502 / 332;
+  flex: none;
 }
-.hero__photo img { height: 100%; }
 
 @media (max-width: 920px) {
   .hero__grid { grid-template-columns: 1fr; min-height: 0; }
   .hero__field {
     padding: calc(var(--nav-h) + var(--sp-md)) var(--gutter) var(--sp-md);
   }
-  .hero__panel { padding: 0; }
-  .hero__photo { aspect-ratio: 16 / 10; border-left: none; border-top: 1px solid var(--border-on-dark); }
+  .hero__panel {
+    justify-content: center;
+    border-left: none;
+    border-top: 1px solid var(--border-on-dark);
+  }
+  .hero__photo { max-width: var(--ar-wide-w); }
 }
 
 @media (max-width: 520px) {
   .hero__ctas { flex-direction: column; align-items: stretch; }
   .hero__ctas .btn { width: 100%; }
-  .hero__photo { aspect-ratio: 4 / 3; }
 }
 
 /* ════════════════════════════════════════
@@ -97,7 +108,7 @@
    ════════════════════════════════════════ */
 .editorial__grid {
   display: grid;
-  grid-template-columns: 0.9fr 1.1fr;
+  grid-template-columns: var(--ar-wide-w) 1fr;
   gap: clamp(2.5rem, 6vw, 6rem);
   align-items: center;
 }
@@ -123,18 +134,27 @@
 
 @media (max-width: 880px) {
   .editorial__grid { grid-template-columns: 1fr; gap: 2.75rem; }
-  .editorial__photo { max-width: 440px; }
 }
 
 /* ════════════════════════════════════════
    3 · SERVICES — featured + asymmetric pair
    ════════════════════════════════════════ */
+/* Two 502px photo columns plus the gap. Holding the whole block to this
+   width keeps the featured card, the pair and the heading on one edge, so
+   capping the pictures never opens a margin inside the section. */
+.services {
+  --svc-gap: clamp(1.25rem, 2vw, 1.75rem);
+  --svc-w: calc(var(--ar-wide-w) * 2 + var(--svc-gap));
+}
+
 .services__head {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: clamp(2rem, 5vw, 5rem);
   align-items: end;
   margin-bottom: clamp(2.5rem, 4vw, 3.5rem);
+  max-width: var(--svc-w);
+  margin-inline: auto;
 }
 
 .services__heading {
@@ -153,11 +173,12 @@
 /* Featured */
 .svc-feature {
   display: grid;
-  grid-template-columns: 1.25fr 1fr;
+  grid-template-columns: var(--ar-wide-w) 1fr;
   background: var(--ivory);
   border: 1px solid var(--border);
   overflow: hidden;
-  margin-bottom: clamp(1.25rem, 2vw, 1.75rem);
+  margin: 0 auto var(--svc-gap);
+  max-width: var(--svc-w);
   transition: border-color var(--transition), box-shadow var(--transition);
 }
 .svc-feature:hover {
@@ -165,8 +186,10 @@
   box-shadow: 0 18px 48px rgba(18, 58, 50, 0.09);
 }
 
-.svc-feature__photo { height: 100%; min-height: 340px; }
-.svc-feature__photo .ph { height: 100%; }
+/* No min-height: the row is sized by the body copy, which stays under the
+   332px the source can fill, so the photo stretches without being magnified. */
+.svc-feature__photo { height: 100%; }
+.svc-feature__photo .ph { height: 100%; max-height: 332px; }
 
 .svc-feature__body {
   display: flex;
@@ -203,7 +226,9 @@
 .svc-pair {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: clamp(1.25rem, 2vw, 1.75rem);
+  gap: var(--svc-gap);
+  max-width: var(--svc-w);
+  margin-inline: auto;
 }
 
 .svc-card {
@@ -220,7 +245,7 @@
   box-shadow: 0 18px 48px rgba(18, 58, 50, 0.09);
 }
 
-.svc-card__photo .ph { aspect-ratio: 16 / 10; }
+.svc-card__photo .ph { aspect-ratio: 502 / 332; }
 
 .svc-card__body {
   display: flex;
@@ -252,10 +277,14 @@
 }
 
 @media (max-width: 880px) {
+  .services { --svc-w: var(--ar-wide-w); }
   .services__head { grid-template-columns: 1fr; gap: 1.25rem; align-items: start; }
   .svc-feature { grid-template-columns: 1fr; }
-  .svc-feature__photo { min-height: 0; }
-  .svc-feature__photo .ph { aspect-ratio: 16 / 10; }
+  .svc-feature__photo .ph { height: auto; aspect-ratio: 502 / 332; }
+}
+
+@media (max-width: 680px) {
+  .services { --svc-w: 100%; }
 }
 
 @media (max-width: 680px) {
@@ -265,27 +294,40 @@
 /* ════════════════════════════════════════
    4 · DIFFERENCE — before/after on forest
    ════════════════════════════════════════ */
-.difference__head {
-  text-align: center;
-  margin-bottom: clamp(2.25rem, 3.5vw, 3rem);
+/* The before/after frames are 380×503 portrait. The stage is held to that
+   width, so the section runs as two columns — picture beside the heading —
+   rather than a narrow picture stranded in a full-width band. */
+.difference__grid {
+  display: grid;
+  grid-template-columns: 380px 1fr;
+  gap: clamp(2.5rem, 6vw, 5.5rem);
+  align-items: center;
 }
+
+.difference__stage { width: 380px; }
+
+.difference__head { margin-bottom: clamp(1.75rem, 3vw, 2.5rem); }
+
 .difference__heading {
   font-size: var(--fs-h2-major);
   color: var(--ivory);
 }
 .difference__heading em { color: var(--bronze); }
 
-.difference__stage {
-  max-width: 920px;
-  margin: 0 auto;
+.difference__lead {
+  margin-top: 1.25rem;
+  font-size: var(--fs-body);
+  line-height: 1.8;
+  color: var(--text-on-dark);
+  font-weight: 300;
+  max-width: 42ch;
 }
 
 .difference__selector {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: clamp(0.5rem, 1.2vw, 0.9rem);
-  max-width: 920px;
-  margin: 1.75rem auto 0;
+  max-width: 460px;
 }
 
 .difference__thumb {
@@ -319,13 +361,16 @@
 .difference__thumb--active { border-color: var(--bronze); }
 .difference__thumb--active img { opacity: 1; }
 
-.difference__disclosure {
-  text-align: center;
-  margin-top: 1.25rem;
+.difference__disclosure { margin-top: 1.25rem; }
+
+@media (max-width: 900px) {
+  .difference__grid { grid-template-columns: 1fr; gap: 2.5rem; justify-items: start; }
+  .difference__aside { order: -1; }
 }
 
-@media (max-width: 560px) {
-  .difference__selector { grid-template-columns: repeat(2, 1fr); }
+@media (max-width: 440px) {
+  .difference__stage { width: 100%; }
+  .difference__selector { grid-template-columns: repeat(2, 1fr); max-width: none; }
 }
 
 /* ════════════════════════════════════════
@@ -341,7 +386,7 @@
 
 .process__grid {
   display: grid;
-  grid-template-columns: 0.85fr 1.15fr;
+  grid-template-columns: var(--ar-wide-w) 1fr;
   gap: clamp(2.5rem, 6vw, 5.5rem);
   align-items: start;
 }
@@ -353,7 +398,7 @@
 
 .process__stack {
   position: relative;
-  aspect-ratio: 4 / 5;
+  aspect-ratio: 502 / 332;
   border: 1px solid var(--border);
 }
 .process__frame {
@@ -461,8 +506,8 @@
 .fit__card {
   background: var(--ivory);
   border: 1px solid var(--border);
-  padding: clamp(1.75rem, 3vw, 2.75rem);
-  min-height: 300px;
+  padding: clamp(1.75rem, 3vw, 2.5rem);
+  min-height: 232px;
   display: flex;
   flex-direction: column;
   justify-content: center;
