@@ -1,115 +1,206 @@
+import { useState, useEffect, useRef } from 'react'
 import { Link } from 'react-router-dom'
 import ScrollReveal from '../components/ScrollReveal'
 import BeforeAfterSlider from '../components/BeforeAfterSlider'
+import Photo from '../components/Photo'
 import './Home.css'
-import { useState } from 'react'
 
-const IMG = (name: string, ext = 'webp') => `./assets/photos/${name}.${ext}`
 const BA = (name: string) => `./assets/before-after/${name}.jpg`
 
+const services = [
+  {
+    id: 'house',
+    title: 'House Cleaning',
+    desc: 'A comprehensive clean of the whole home — kitchen, bathrooms, living areas and bedrooms, each given the same systematic attention.',
+    img: 'kitchen-counter-cleaning',
+    alt: 'Kitchen counter and surfaces cleaned to a high standard',
+  },
+  {
+    id: 'apartment',
+    title: 'Apartment Cleaning',
+    desc: 'Shaped around apartment and condo living, from studios to multi-bedroom units — making the most of every square foot.',
+    img: 'bathroom-clean-interior',
+    alt: 'Clean, bright apartment bathroom interior',
+  },
+  {
+    id: 'recurring',
+    title: 'Recurring Cleaning',
+    desc: 'Weekly, bi-weekly or monthly visits on a schedule that suits you, so the upkeep never becomes something you think about.',
+    img: 'bedroom-fresh-linens',
+    alt: 'Bedroom with freshly made bed and clean linens',
+  },
+]
+
+const steps = [
+  { n: '01', title: 'Request a Quote', desc: 'Tell us about your home — its type, size, the areas that matter most to you, and any preferences or sensitivities we should know about.', img: 'cleaning-supplies', alt: 'Cleaning supplies prepared ahead of a visit' },
+  { n: '02', title: 'Confirm Your Cleaning', desc: 'We follow up to talk through what is included and agree a clear scope before anything is booked. No assumptions, no surprises on the day.', img: 'faucet-detail', alt: 'Close detail of a polished tap and sink' },
+  { n: '03', title: 'Professional Cleaning', desc: 'We work through your home methodically, giving each area the same unhurried care — whether it is a first visit or your fiftieth.', img: 'living-room-vacuuming', alt: 'Living room floor being carefully vacuumed' },
+  { n: '04', title: 'Enjoy Your Space', desc: 'You come back to a home that has been genuinely looked after. For recurring clients, this simply becomes how the house always feels.', img: 'hero-calgary-living-room', alt: 'Calm, beautifully maintained Calgary living room' },
+]
+
+const comparisons = [
+  { id: 'kitchen', label: 'Kitchen' },
+  { id: 'bathroom', label: 'Bathroom' },
+  { id: 'living-room', label: 'Living Room' },
+  { id: 'bedroom', label: 'Bedroom' },
+]
+
 const faqs = [
-  { q: 'What areas of Calgary do you serve?', a: 'We serve Calgary and surrounding communities. Contact us to confirm your area.' },
-  { q: 'What cleaning services do you offer?', a: 'We offer house cleaning, apartment cleaning, and recurring maintenance cleaning. Get in touch to discuss your specific needs.' },
-  { q: 'Do I need to provide cleaning supplies?', a: 'No — we bring our own supplies and equipment. Let us know if you have any preferences or sensitivities.' },
-  { q: 'How do I get a quote?', a: 'Use our quote form to share details about your home and preferences. We\'ll follow up to confirm scope and scheduling.' },
-  { q: 'Can I schedule recurring cleanings?', a: 'Yes. Many clients set up weekly, bi-weekly, or monthly visits. We\'ll work with your schedule.' },
-  { q: 'What if I need to reschedule?', a: 'We ask for as much notice as possible. Reach us by phone or through the quote form to adjust your booking.' },
+  { q: 'What areas of Calgary do you serve?', a: 'We serve Calgary and the surrounding communities. Get in touch and we will confirm whether your area is covered.' },
+  { q: 'What cleaning services do you offer?', a: 'House cleaning, apartment cleaning, and recurring maintenance cleaning. If you are unsure which fits, the quote form is the easiest place to start.' },
+  { q: 'Do I need to provide cleaning supplies?', a: 'No — we arrive with our own supplies and equipment. Let us know in advance if you have product preferences or sensitivities in the home.' },
+  { q: 'How do I get a quote?', a: 'Use the quote form to share details about your home and what you are looking for. We follow up to confirm scope and scheduling before anything is booked.' },
+  { q: 'Can I schedule recurring cleanings?', a: 'Yes. Many clients set up weekly, bi-weekly or monthly visits, and the frequency can be adjusted as your needs change.' },
 ]
 
 type HomeType = '' | 'house' | 'apartment' | 'condo'
 type Frequency = '' | 'once' | 'weekly' | 'biweekly' | 'monthly'
 
 export default function Home() {
-  const [selectorStep, setSelectorStep] = useState(0)
+  const [activeStep, setActiveStep] = useState(0)
+  const stepRefs = useRef<(HTMLDivElement | null)[]>([])
+
+  const [activeComp, setActiveComp] = useState('kitchen')
+  const current = comparisons.find(c => c.id === activeComp)!
+
+  const [step, setStep] = useState(0)
   const [homeType, setHomeType] = useState<HomeType>('')
   const [bedrooms, setBedrooms] = useState('')
-  const [frequency, setFrequency] = useState<Frequency>('')
   const [summary, setSummary] = useState('')
 
-  const generateSummary = () => {
-    if (!homeType || !bedrooms || !frequency) return
-    const typeLabel = homeType === 'house' ? 'House' : homeType === 'apartment' ? 'Apartment' : 'Condo'
-    const freqLabel = frequency === 'once' ? 'one-time' : frequency
-    setSummary(`I'm looking for ${freqLabel} cleaning for a ${bedrooms}-bedroom ${typeLabel} in Calgary. Please get in touch to discuss details and availability.`)
-    setSelectorStep(3)
+  // Drive the sticky process imagery from whichever step is in view.
+  useEffect(() => {
+    const obs = new IntersectionObserver(
+      entries => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            const idx = stepRefs.current.indexOf(entry.target as HTMLDivElement)
+            if (idx !== -1) setActiveStep(idx)
+          }
+        })
+      },
+      { rootMargin: '-45% 0px -45% 0px', threshold: 0 }
+    )
+    stepRefs.current.forEach(el => el && obs.observe(el))
+    return () => obs.disconnect()
+  }, [])
+
+  const buildSummary = (freq: Frequency) => {
+    const typeLabel = homeType === 'house' ? 'house' : homeType === 'apartment' ? 'apartment' : 'condo'
+    const freqLabel =
+      freq === 'once' ? 'a one-time clean' :
+      freq === 'weekly' ? 'weekly cleaning' :
+      freq === 'biweekly' ? 'bi-weekly cleaning' : 'monthly cleaning'
+    setSummary(`I would like ${freqLabel} for a ${bedrooms}-bedroom ${typeLabel} in Calgary. Please get in touch to discuss scope and availability.`)
+    setStep(3)
+  }
+
+  const resetSelector = () => {
+    setStep(0); setHomeType(''); setBedrooms(''); setSummary('')
   }
 
   return (
     <div className="home">
 
-      {/* 1 — Hero */}
-      <section className="hero" aria-label="Hero">
-        <div className="hero__bg">
-          <picture>
-            <source srcSet={IMG('hero-calgary-living-room')} type="image/webp" />
-            <img src={IMG('hero-calgary-living-room', 'jpg')} alt="Beautifully maintained Calgary living room" className="hero__img" />
-          </picture>
-          <div className="hero__overlay" />
-        </div>
-        <div className="container hero__content">
-          <p className="eyebrow hero__eyebrow">Thoughtful home cleaning in Calgary</p>
-          <h1 className="hero__headline">Come Home to a Better Kind of Clean.</h1>
-          <p className="hero__sub">A beautifully maintained home makes room for everything else.</p>
-          <div className="hero__ctas">
-            <Link to="/quote" className="btn btn-primary">Request My Quote</Link>
-            <Link to="/services" className="btn btn-outline">Explore Cleaning Services</Link>
+      {/* ═══ 1 · Hero — asymmetric split, no text over photography ═══ */}
+      <section className="hero surf-evergreen" aria-label="Leads Cleaning">
+        <div className="hero__grid">
+          <div className="hero__field">
+            <div className="hero__field-inner">
+              <span className="eyebrow">Thoughtful home cleaning in Calgary</span>
+              <h1 className="hero__headline">
+                A Beautifully Clean&nbsp;Home.<br />
+                <em>A Better Way to Live.</em>
+              </h1>
+              <p className="hero__sub">
+                Thoughtful cleaning services for Calgary homes — bringing comfort,
+                freshness and more time back into your day.
+              </p>
+              <div className="hero__ctas">
+                <Link to="/quote" className="btn btn-bronze">Request Your Free Quote</Link>
+                <Link to="/services" className="btn btn-ghost">Explore Our Services</Link>
+              </div>
+              <div className="hero__meta">
+                <span>Houses · Apartments · Recurring</span>
+                <a href="tel:+14036070581">+1 403-607-0581</a>
+              </div>
+            </div>
+          </div>
+
+          <div className="hero__panel">
+            <Photo name="hero-calgary-living-room" alt="A calm, beautifully maintained Calgary living room" eager className="hero__photo" />
           </div>
         </div>
-        <div className="hero__scroll-cue" aria-hidden="true">
-          <span />
-        </div>
       </section>
 
-      {/* 2 — Editorial intro */}
-      <section className="editorial">
-        <div className="container editorial__inner">
-          <ScrollReveal className="editorial__text">
-            <p className="eyebrow">The Leads Difference</p>
-            <h2 className="editorial__heading">A little more room<br /><em>to live.</em></h2>
+      {/* ═══ 2 · Editorial — signature lifestyle statement ═══ */}
+      <section className="editorial surf-ivory sec-xl" aria-label="A little more time for what matters">
+        <div className="container editorial__grid">
+          <ScrollReveal className="editorial__photo">
+            <Photo name="calgary-entryway" alt="Sunlit entryway of a cared-for Calgary home" className="ph--zoom ar-tall" />
+          </ScrollReveal>
+
+          <ScrollReveal delay={140} className="editorial__text">
+            <span className="eyebrow">The Leads Difference</span>
+            <span className="rule" />
+            <h2 className="editorial__heading">A Little More Time<br /><em>for What Matters.</em></h2>
             <p className="editorial__body">
-              We believe your home should be a place of ease — not another thing on your list.
-              Every visit is carried out with the same careful attention to detail, whether it's
-              your first time or your fiftieth.
+              A beautifully maintained home changes how you experience everyday life.
+              Less time worrying about cleaning. More time enjoying the space around you.
             </p>
-            <Link to="/about" className="editorial__link">
-              Learn about us <span aria-hidden="true">→</span>
+            <p className="editorial__body editorial__body--muted">
+              We work to one standard, every visit — the same care on your first
+              appointment as on your fiftieth.
+            </p>
+            <Link to="/about" className="link-arrow">
+              About Leads Cleaning <span aria-hidden="true">→</span>
             </Link>
           </ScrollReveal>
-          <ScrollReveal delay={150} className="editorial__photo-wrap">
-            <picture>
-              <source srcSet={IMG('faucet-detail')} type="image/webp" />
-              <img src={IMG('faucet-detail', 'jpg')} alt="Detailed faucet cleaning — precision work" className="editorial__photo" />
-            </picture>
-            <div className="editorial__photo-accent" />
-          </ScrollReveal>
         </div>
       </section>
 
-      {/* 3 — Services tiles */}
-      <section className="services-tiles" aria-label="Our services">
+      {/* ═══ 3 · Services — one featured panel + asymmetric pair ═══ */}
+      <section className="services surf-limestone sec-lg" aria-label="Our services">
         <div className="container">
-          <ScrollReveal>
-            <p className="eyebrow" style={{ textAlign: 'center' }}>What We Offer</p>
-            <h2 className="services-tiles__heading">Cleaning that fits your home.</h2>
+          <ScrollReveal className="services__head">
+            <div>
+              <span className="eyebrow">What We Offer</span>
+              <h2 className="services__heading">Three services,<br />shaped around your home.</h2>
+            </div>
+            <p className="services__intro">
+              Every home asks for something slightly different. These are the three ways
+              we work — each carried out with the same meticulous attention.
+            </p>
           </ScrollReveal>
-          <div className="services-tiles__grid">
-            {[
-              { title: 'House Cleaning', desc: 'Comprehensive care for every room — kitchens, bathrooms, living areas, and bedrooms.', img: 'kitchen-counter-cleaning', alt: 'Clean kitchen counter' },
-              { title: 'Apartment Cleaning', desc: 'Tailored for apartment living, from studio to multi-bedroom, with attention to smaller spaces.', img: 'bathroom-clean-interior', alt: 'Clean apartment bathroom' },
-              { title: 'Recurring Cleaning', desc: 'Weekly, bi-weekly, or monthly visits so your home stays consistently fresh without effort.', img: 'bedroom-fresh-linens', alt: 'Fresh bedroom with clean linens' },
-            ].map((s, i) => (
-              <ScrollReveal key={s.title} delay={i * 100}>
-                <Link to="/services" className="service-tile">
-                  <div className="service-tile__img-wrap">
-                    <picture>
-                      <source srcSet={IMG(s.img)} type="image/webp" />
-                      <img src={IMG(s.img, 'jpg')} alt={s.alt} className="service-tile__img" loading="lazy" />
-                    </picture>
+
+          {/* Featured */}
+          <ScrollReveal delay={80}>
+            <Link to="/services#house-cleaning" className="svc-feature">
+              <div className="svc-feature__photo">
+                <Photo name={services[0].img} alt={services[0].alt} className="ph--zoom" />
+              </div>
+              <div className="svc-feature__body">
+                <span className="svc-feature__index">01 — Most requested</span>
+                <h3 className="svc-feature__title">{services[0].title}</h3>
+                <p className="svc-feature__desc">{services[0].desc}</p>
+                <span className="link-arrow">Explore this service <span aria-hidden="true">→</span></span>
+              </div>
+            </Link>
+          </ScrollReveal>
+
+          {/* Asymmetric pair */}
+          <div className="svc-pair">
+            {services.slice(1).map((s, i) => (
+              <ScrollReveal key={s.id} delay={120 + i * 100}>
+                <Link to={`/services#${s.id}-cleaning`} className="svc-card">
+                  <div className="svc-card__photo">
+                    <Photo name={s.img} alt={s.alt} className="ph--zoom" />
                   </div>
-                  <div className="service-tile__body">
-                    <h3 className="service-tile__title">{s.title}</h3>
-                    <p className="service-tile__desc">{s.desc}</p>
-                    <span className="service-tile__cta">Learn more <span aria-hidden="true">→</span></span>
+                  <div className="svc-card__body">
+                    <span className="svc-card__index">{`0${i + 2}`}</span>
+                    <h3 className="svc-card__title">{s.title}</h3>
+                    <p className="svc-card__desc">{s.desc}</p>
+                    <span className="link-arrow">Learn more <span aria-hidden="true">→</span></span>
                   </div>
                 </Link>
               </ScrollReveal>
@@ -118,201 +209,216 @@ export default function Home() {
         </div>
       </section>
 
-      {/* 4 — The Details Matter */}
-      <section className="details" aria-label="The details matter">
+      {/* ═══ 4 · Before & After — featured comparison on forest ═══ */}
+      <section className="difference surf-forest sec-lg" aria-label="Before and after comparisons">
         <div className="container">
-          <ScrollReveal>
-            <p className="eyebrow">Our Standard</p>
-            <h2 className="details__heading">The Details Matter.</h2>
+          <ScrollReveal className="difference__head">
+            <span className="eyebrow">A Visible Difference</span>
+            <h2 className="difference__heading">The Difference Is<br /><em>in the Details.</em></h2>
           </ScrollReveal>
-          {[
-            { img: 'cabinet-detail-cleaning', alt: 'Cabinet handles carefully wiped down', title: 'Every surface considered.', body: 'We don\'t skip the edges. Cabinet faces, door frames, light switches — the small things that quietly matter.' },
-            { img: 'faucet-detail', alt: 'Faucet and sink detailing', title: 'Fixtures left spotless.', body: 'Taps, handles and fixtures get the kind of attention that makes a bathroom feel genuinely cared for.' },
-            { img: 'living-room-vacuuming', alt: 'Living room being carefully vacuumed', title: 'Floors you notice.', body: 'Careful vacuuming, attentive to edges, furniture legs, and the spaces in between.' },
-          ].map((d, i) => (
-            <div key={d.title} className={`details__row details__row--${i % 2 === 0 ? 'normal' : 'reverse'}`}>
-              <ScrollReveal delay={100} className="details__img-wrap">
-                <picture>
-                  <source srcSet={IMG(d.img)} type="image/webp" />
-                  <img src={IMG(d.img, 'jpg')} alt={d.alt} className="details__img" loading="lazy" />
-                </picture>
-              </ScrollReveal>
-              <ScrollReveal delay={200} className="details__text">
-                <h3 className="details__title">{d.title}</h3>
-                <p className="details__body">{d.body}</p>
-              </ScrollReveal>
-            </div>
-          ))}
-        </div>
-      </section>
 
-      {/* 5 — Our Approach */}
-      <section className="approach-preview" aria-label="Our approach">
-        <div className="container">
-          <ScrollReveal>
-            <p className="eyebrow" style={{ textAlign: 'center' }}>How It Works</p>
-            <h2 className="approach-preview__heading">From first message to fresh home.</h2>
+          <ScrollReveal delay={100} className="difference__stage">
+            <BeforeAfterSlider
+              key={activeComp}
+              before={BA(`${activeComp}-before`)}
+              after={BA(`${activeComp}-after`)}
+              beforeAlt={`${current.label} before cleaning`}
+              afterAlt={`${current.label} after cleaning`}
+              label={`${current.label} before and after comparison`}
+              onDark
+            />
           </ScrollReveal>
-          <div className="approach-steps">
-            {[
-              { n: '01', title: 'Tell us about your space', desc: 'Share your home type, size, and what matters most to you.' },
-              { n: '02', title: 'Confirm your scope', desc: 'We\'ll discuss what\'s included and agree on a clear approach before anything begins.' },
-              { n: '03', title: 'We clean thoughtfully', desc: 'Your home receives attentive, systematic care — nothing rushed, nothing overlooked.' },
-              { n: '04', title: 'Come home to refreshed spaces', desc: 'Return to a home that feels exactly as it should: calm, clean, and yours.' },
-            ].map((step, i) => (
-              <ScrollReveal key={step.n} delay={i * 80} className="approach-step">
-                <span className="approach-step__number">{step.n}</span>
-                <h3 className="approach-step__title">{step.title}</h3>
-                <p className="approach-step__desc">{step.desc}</p>
-              </ScrollReveal>
-            ))}
-          </div>
-          <ScrollReveal>
-            <div style={{ textAlign: 'center', marginTop: '3rem' }}>
-              <Link to="/approach" className="btn btn-primary">See Our Full Approach</Link>
+
+          <ScrollReveal delay={140}>
+            <div className="difference__selector" role="tablist" aria-label="Choose a room to compare">
+              {comparisons.map(c => (
+                <button
+                  key={c.id}
+                  role="tab"
+                  aria-selected={activeComp === c.id}
+                  className={`difference__thumb${activeComp === c.id ? ' difference__thumb--active' : ''}`}
+                  onClick={() => setActiveComp(c.id)}
+                >
+                  <img src={BA(`${c.id}-after`)} alt="" aria-hidden="true" loading="lazy" />
+                  <span>{c.label}</span>
+                </button>
+              ))}
             </div>
+            <p className="disclosure difference__disclosure">
+              Illustrative concept images, not customer projects.
+            </p>
           </ScrollReveal>
         </div>
       </section>
 
-      {/* 6 — Before/After */}
-      <section className="baf-section" aria-label="Before and after results">
+      {/* ═══ 5 · Process — sticky imagery, editorial steps ═══ */}
+      <section className="process surf-ivory sec-lg" aria-label="How it works">
         <div className="container">
-          <ScrollReveal>
-            <p className="eyebrow" style={{ textAlign: 'center' }}>A Visible Difference</p>
-            <h2 className="baf-section__heading">See the transformation.</h2>
+          <ScrollReveal className="process__head">
+            <span className="eyebrow">How It Works</span>
+            <h2 className="process__heading">Effortless From First Contact<br /><em>to Final Detail.</em></h2>
           </ScrollReveal>
-          <ScrollReveal delay={100}>
-            <div className="baf-section__slider-wrap">
-              <BeforeAfterSlider
-                before={BA('kitchen-before')}
-                after={BA('kitchen-after')}
-                beforeAlt="Kitchen before cleaning"
-                afterAlt="Kitchen after cleaning"
-                label="Kitchen before and after cleaning comparison"
-              />
-            </div>
-          </ScrollReveal>
-          <ScrollReveal delay={150}>
-            <div style={{ textAlign: 'center', marginTop: '2rem' }}>
-              <Link to="/results" className="btn btn-primary">View All Comparisons</Link>
-            </div>
-          </ScrollReveal>
-        </div>
-      </section>
 
-      {/* 7 — Find your cleaning fit */}
-      <section className="selector" aria-label="Find your cleaning fit">
-        <div className="container">
-          <ScrollReveal>
-            <p className="eyebrow" style={{ textAlign: 'center' }}>Find Your Fit</p>
-            <h2 className="selector__heading">Not sure where to start?</h2>
-            <p className="selector__sub">Answer three quick questions and we'll put together an enquiry for you.</p>
-          </ScrollReveal>
-          <ScrollReveal delay={100}>
-            <div className="selector__card">
-              {selectorStep < 3 ? (
-                <>
-                  {selectorStep === 0 && (
-                    <div className="selector__step">
-                      <p className="selector__question">What type of home?</p>
-                      <div className="selector__options">
-                        {(['house', 'apartment', 'condo'] as HomeType[]).map(t => (
-                          <button key={t} className={`selector__opt${homeType === t ? ' selector__opt--active' : ''}`} onClick={() => { setHomeType(t); setSelectorStep(1) }}>
-                            {t.charAt(0).toUpperCase() + t.slice(1)}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                  {selectorStep === 1 && (
-                    <div className="selector__step">
-                      <p className="selector__question">How many bedrooms?</p>
-                      <div className="selector__options">
-                        {['1', '2', '3', '4+'].map(n => (
-                          <button key={n} className={`selector__opt${bedrooms === n ? ' selector__opt--active' : ''}`} onClick={() => { setBedrooms(n); setSelectorStep(2) }}>
-                            {n}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                  {selectorStep === 2 && (
-                    <div className="selector__step">
-                      <p className="selector__question">How often?</p>
-                      <div className="selector__options">
-                        {([['once', 'One-time'], ['weekly', 'Weekly'], ['biweekly', 'Bi-weekly'], ['monthly', 'Monthly']] as [Frequency, string][]).map(([v, l]) => (
-                          <button key={v} className={`selector__opt${frequency === v ? ' selector__opt--active' : ''}`} onClick={() => { setFrequency(v); setSelectorStep(2.5 as never) }}>
-                            {l}
-                          </button>
-                        ))}
-                      </div>
-                      <button className="selector__generate btn btn-primary" onClick={generateSummary} disabled={!frequency}>
-                        Generate My Enquiry
-                      </button>
-                    </div>
-                  )}
-                </>
-              ) : (
-                <div className="selector__result">
-                  <p className="selector__result-label eyebrow">Your Enquiry Summary</p>
-                  <blockquote className="selector__result-text">"{summary}"</blockquote>
-                  <div className="selector__result-actions">
-                    <Link to={`/quote?summary=${encodeURIComponent(summary)}`} className="btn btn-primary">Use This in My Quote</Link>
-                    <button className="selector__reset" onClick={() => { setSelectorStep(0); setHomeType(''); setBedrooms(''); setFrequency(''); setSummary('') }}>Start Over</button>
+          <div className="process__grid">
+            <div className="process__sticky" aria-hidden="true">
+              <div className="process__stack">
+                {steps.map((s, i) => (
+                  <div key={s.n} className={`process__frame${activeStep === i ? ' process__frame--active' : ''}`}>
+                    <Photo name={s.img} alt="" className="ar-tall" />
                   </div>
-                </div>
-              )}
-              {selectorStep > 0 && selectorStep < 3 && (
-                <button className="selector__back" onClick={() => setSelectorStep(s => s - 1)}>← Back</button>
-              )}
+                ))}
+              </div>
+              <div className="process__progress">
+                <span className="process__progress-now">{steps[activeStep].n}</span>
+                <span className="process__progress-track">
+                  <span className="process__progress-fill" style={{ transform: `scaleX(${(activeStep + 1) / steps.length})` }} />
+                </span>
+                <span className="process__progress-total">04</span>
+              </div>
+            </div>
+
+            <ol className="process__steps">
+              {steps.map((s, i) => (
+                <li key={s.n}>
+                  <div
+                    ref={el => { stepRefs.current[i] = el }}
+                    className={`process__step${activeStep === i ? ' process__step--active' : ''}`}
+                  >
+                    <div className="process__step-mobile-photo">
+                      <Photo name={s.img} alt={s.alt} className="ar-wide" />
+                    </div>
+                    <span className="process__step-n">{s.n}</span>
+                    <h3 className="process__step-title">{s.title}</h3>
+                    <p className="process__step-desc">{s.desc}</p>
+                  </div>
+                </li>
+              ))}
+            </ol>
+          </div>
+
+          <ScrollReveal>
+            <div className="process__cta">
+              <Link to="/approach" className="btn btn-ghost-dark">See Our Full Approach</Link>
             </div>
           </ScrollReveal>
         </div>
       </section>
 
-      {/* 8 — FAQ */}
-      <section className="home-faq" aria-label="Frequently asked questions">
-        <div className="container">
-          <ScrollReveal>
-            <p className="eyebrow" style={{ textAlign: 'center' }}>Questions</p>
-            <h2 className="home-faq__heading">Good to know before you book.</h2>
+      {/* ═══ 6 · Find your fit ═══ */}
+      <section className="fit surf-limestone sec-md" aria-label="Find your cleaning fit">
+        <div className="container fit__grid">
+          <ScrollReveal className="fit__intro">
+            <span className="eyebrow">Find Your Fit</span>
+            <h2 className="fit__heading">Not sure where to start?</h2>
+            <p className="fit__sub">
+              Answer three short questions and we will put together an enquiry summary
+              you can send straight through. No pricing is calculated — we confirm that
+              with you directly.
+            </p>
           </ScrollReveal>
-          <div className="home-faq__list">
+
+          <ScrollReveal delay={120} className="fit__card">
+            {step < 3 ? (
+              <>
+                <div className="fit__progress">
+                  {[0, 1, 2].map(i => (
+                    <span key={i} className={`fit__dot${step >= i ? ' fit__dot--on' : ''}`} />
+                  ))}
+                </div>
+
+                {step === 0 && (
+                  <div className="fit__step">
+                    <p className="fit__q">What type of home?</p>
+                    <div className="fit__opts">
+                      {(['house', 'apartment', 'condo'] as const).map(t => (
+                        <button key={t} className="fit__opt" onClick={() => { setHomeType(t); setStep(1) }}>
+                          {t.charAt(0).toUpperCase() + t.slice(1)}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {step === 1 && (
+                  <div className="fit__step">
+                    <p className="fit__q">How many bedrooms?</p>
+                    <div className="fit__opts">
+                      {['1', '2', '3', '4+'].map(n => (
+                        <button key={n} className="fit__opt" onClick={() => { setBedrooms(n); setStep(2) }}>{n}</button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {step === 2 && (
+                  <div className="fit__step">
+                    <p className="fit__q">How often?</p>
+                    <div className="fit__opts">
+                      {([['once', 'One-time'], ['weekly', 'Weekly'], ['biweekly', 'Bi-weekly'], ['monthly', 'Monthly']] as [Frequency, string][]).map(([v, l]) => (
+                        <button key={v} className="fit__opt" onClick={() => buildSummary(v)}>{l}</button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {step > 0 && (
+                  <button className="fit__back" onClick={() => setStep(s => s - 1)}>← Back</button>
+                )}
+              </>
+            ) : (
+              <div className="fit__result">
+                <span className="eyebrow">Your Enquiry Summary</span>
+                <blockquote className="fit__quote">{summary}</blockquote>
+                <div className="fit__actions">
+                  <Link to={`/quote?summary=${encodeURIComponent(summary)}`} className="btn btn-primary">
+                    Use This in My Quote
+                  </Link>
+                  <button className="fit__reset" onClick={resetSelector}>Start over</button>
+                </div>
+              </div>
+            )}
+          </ScrollReveal>
+        </div>
+      </section>
+
+      {/* ═══ 7 · FAQ ═══ */}
+      <section className="faq-home surf-ivory sec-md" aria-label="Frequently asked questions">
+        <div className="container faq-home__grid">
+          <ScrollReveal className="faq-home__aside">
+            <span className="eyebrow">Questions</span>
+            <h2 className="faq-home__heading">Good to know<br />before you book.</h2>
+            <Link to="/faq" className="link-arrow">All questions <span aria-hidden="true">→</span></Link>
+          </ScrollReveal>
+
+          <div className="faq-home__list">
             {faqs.map((f, i) => (
-              <ScrollReveal key={i} delay={i * 60}>
+              <ScrollReveal key={i} delay={i * 50}>
                 <details className="faq-item">
-                  <summary className="faq-item__q">{f.q}</summary>
-                  <p className="faq-item__a">{f.a}</p>
+                  <summary className="faq-item__q">
+                    <span>{f.q}</span>
+                    <span className="faq-item__icon" aria-hidden="true" />
+                  </summary>
+                  <div className="faq-item__a"><p>{f.a}</p></div>
                 </details>
               </ScrollReveal>
             ))}
           </div>
-          <ScrollReveal>
-            <div style={{ textAlign: 'center', marginTop: '2.5rem' }}>
-              <Link to="/faq" className="btn btn-primary">View All FAQs</Link>
-            </div>
-          </ScrollReveal>
         </div>
       </section>
 
-      {/* 9 — CTA */}
-      <section className="cta-band" aria-label="Get a quote">
-        <div className="cta-band__bg">
-          <picture>
-            <source srcSet={IMG('calgary-entryway')} type="image/webp" />
-            <img src={IMG('calgary-entryway', 'jpg')} alt="Clean Calgary home entryway" className="cta-band__img" loading="lazy" />
-          </picture>
-          <div className="cta-band__overlay" />
-        </div>
-        <div className="container cta-band__content">
+      {/* ═══ 8 · Closing CTA — solid evergreen, no photography ═══ */}
+      <section className="closing surf-evergreen sec-lg" aria-label="Request a quote">
+        <div className="container closing__inner">
           <ScrollReveal>
-            <p className="eyebrow" style={{ color: 'var(--bronze)' }}>Ready When You Are</p>
-            <h2 className="cta-band__heading">Your home deserves this.</h2>
-            <p className="cta-band__sub">Tell us about your space and we'll be in touch to confirm the details.</p>
-            <div className="cta-band__actions">
-              <Link to="/quote" className="btn btn-bronze">Request My Quote</Link>
-              <a href="tel:+14036070581" className="btn btn-outline">Call +1 403-607-0581</a>
+            <span className="eyebrow">Ready When You Are</span>
+            <h2 className="closing__heading">Your Beautifully Clean<br /><em>Space Begins Here.</em></h2>
+            <p className="closing__sub">
+              Tell us about your home and we will be in touch to confirm scope,
+              scheduling and everything else.
+            </p>
+            <div className="closing__actions">
+              <Link to="/quote" className="btn btn-bronze">Request Your Free Quote</Link>
+              <a href="tel:+14036070581" className="btn btn-ghost">Call +1 403-607-0581</a>
             </div>
           </ScrollReveal>
         </div>

@@ -1,7 +1,11 @@
-import { useState, useEffect } from 'react'
-import { useLocation } from 'react-router-dom'
+import { useState } from 'react'
+import { useLocation, Link } from 'react-router-dom'
 import ScrollReveal from '../components/ScrollReveal'
 import './Quote.css'
+
+/** Owner to confirm before launch — see README. */
+const CONTACT_EMAIL = 'info@leadscleaning.ca'
+const CONTACT_PHONE = '+1 403-607-0581'
 
 type Step = 1 | 2 | 3 | 4 | 5
 
@@ -29,291 +33,302 @@ const empty: FormData = {
   consent: false, honeypot: '',
 }
 
+const stepNames = ['Service', 'Your Home', 'Frequency', 'Preferences', 'Contact']
+
 export default function Quote() {
   const location = useLocation()
   const [step, setStep] = useState<Step>(1)
-  const [form, setForm] = useState<FormData>(empty)
+  // Seed `notes` from a ?summary= handed over by the home-page fit selector.
+  const [form, setForm] = useState<FormData>(() => {
+    const summary = new URLSearchParams(location.search).get('summary')
+    return summary ? { ...empty, notes: summary } : empty
+  })
   const [submitted, setSubmitted] = useState(false)
   const [errors, setErrors] = useState<Partial<Record<keyof FormData, string>>>({})
 
-  useEffect(() => {
-    const params = new URLSearchParams(location.search)
-    const summary = params.get('summary')
-    if (summary) setForm(f => ({ ...f, notes: summary }))
-  }, [location.search])
-
-  const set = (key: keyof FormData, val: string | boolean) =>
+  const set = (key: keyof FormData, val: string | boolean) => {
     setForm(f => ({ ...f, [key]: val }))
+    setErrors(e => ({ ...e, [key]: undefined }))
+  }
 
-  const validateStep = (): boolean => {
+  const validate = (): boolean => {
     const e: typeof errors = {}
-    if (step === 1 && !form.service) e.service = 'Please select a service.'
-    if (step === 2 && !form.homeType) e.homeType = 'Please select a home type.'
-    if (step === 2 && !form.bedrooms) e.bedrooms = 'Please select bedrooms.'
-    if (step === 3 && !form.frequency) e.frequency = 'Please select a frequency.'
-    if (step === 4 && !form.area) e.area = 'Please enter your area or postcode.'
+    if (step === 1 && !form.service) e.service = 'Please choose a service.'
+    if (step === 2) {
+      if (!form.homeType) e.homeType = 'Please choose a home type.'
+      if (!form.bedrooms) e.bedrooms = 'Please choose the number of bedrooms.'
+    }
+    if (step === 3 && !form.frequency) e.frequency = 'Please choose a frequency.'
+    if (step === 4 && !form.area.trim()) e.area = 'Please enter your area or postal code.'
     if (step === 5) {
-      if (!form.name.trim()) e.name = 'Name is required.'
-      if (!form.email.trim() || !/\S+@\S+\.\S+/.test(form.email)) e.email = 'Valid email required.'
-      if (!form.consent) e.consent = 'Please confirm your consent.'
+      if (!form.name.trim()) e.name = 'Please enter your name.'
+      if (!/\S+@\S+\.\S+/.test(form.email)) e.email = 'Please enter a valid email address.'
+      if (!form.consent) e.consent = 'Please confirm before sending.'
     }
     setErrors(e)
     return Object.keys(e).length === 0
   }
 
-  const next = () => { if (validateStep()) setStep(s => Math.min(s + 1, 5) as Step) }
-  const prev = () => { setStep(s => Math.max(s - 1, 1) as Step); setErrors({}) }
+  const next = () => { if (validate()) setStep(s => Math.min(s + 1, 5) as Step) }
+  const prev = () => { setErrors({}); setStep(s => Math.max(s - 1, 1) as Step) }
 
   const submit = () => {
-    if (!validateStep()) return
-    if (form.honeypot) return // spam
+    if (!validate()) return
+    if (form.honeypot) return
+
     const body = [
       `Service: ${form.service}`,
-      `Home type: ${form.homeType}, Bedrooms: ${form.bedrooms}, Bathrooms: ${form.bathrooms}`,
+      `Home type: ${form.homeType}`,
+      `Bedrooms: ${form.bedrooms}${form.bathrooms ? `, Bathrooms: ${form.bathrooms}` : ''}`,
       `Frequency: ${form.frequency}`,
-      `Area: ${form.area}`,
+      `Area / postal code: ${form.area}`,
       form.preferredDate ? `Preferred date: ${form.preferredDate}` : '',
-      form.notes ? `Notes: ${form.notes}` : '',
-      `Name: ${form.name}`,
+      form.notes ? `\nNotes:\n${form.notes}` : '',
+      `\nName: ${form.name}`,
       `Email: ${form.email}`,
       form.phone ? `Phone: ${form.phone}` : '',
-      `Contact preference: ${form.contactPref}`,
+      `Preferred contact: ${form.contactPref}`,
     ].filter(Boolean).join('\n')
 
-    window.location.href = `mailto:info@leadscleaning.ca?subject=Quote Request from ${encodeURIComponent(form.name)}&body=${encodeURIComponent(body)}`
+    window.location.href =
+      `mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent(`Quote request — ${form.name}`)}&body=${encodeURIComponent(body)}`
     setSubmitted(true)
   }
 
   if (submitted) {
     return (
       <div className="quote-page">
-        <section className="quote-success">
-          <div className="container">
-            <div className="quote-success__card">
-              <div className="quote-success__icon" aria-hidden="true">✓</div>
-              <h1 className="quote-success__title">Your email app should have opened.</h1>
-              <p>If it didn't open automatically, you can email us directly at <strong>+1 403-607-0581</strong> or use the contact details below.</p>
-              <p className="quote-success__note">We aim to respond within one business day.</p>
+        <section className="qsuccess surf-evergreen">
+          <div className="container qsuccess__inner">
+            <span className="qsuccess__mark" aria-hidden="true">
+              <svg width="26" height="26" viewBox="0 0 24 24" fill="none">
+                <path d="m4 12.5 5.5 5.5L20 7" stroke="currentColor" strokeWidth="1.8"
+                  strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </span>
+            <h1 className="qsuccess__title">Your email app should have opened.</h1>
+            <p className="qsuccess__body">
+              Your request has been prepared as an email — you will need to press send in
+              your mail app to deliver it. If nothing opened, you can reach us directly:
+            </p>
+            <div className="qsuccess__contacts">
+              <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>
+              <a href="tel:+14036070581">{CONTACT_PHONE}</a>
             </div>
+            <Link to="/" className="btn btn-ghost qsuccess__home">Back to Home</Link>
           </div>
         </section>
       </div>
     )
   }
 
-  const steps = ['Service', 'Your Home', 'Frequency & Location', 'Preferences', 'Contact']
-
   return (
     <div className="quote-page">
-      <section className="page-hero page-hero--limestone">
+
+      <section className="page-hero surf-evergreen">
         <div className="container">
-          <p className="eyebrow">Get a Quote</p>
-          <h1 className="page-hero__title">Tell us about<br /><em>your home.</em></h1>
-          <p className="page-hero__sub">A few quick questions so we can get back to you with the right details.</p>
+          <div className="qhero">
+            <span className="eyebrow page-hero__eyebrow">Get a Quote</span>
+            <span className="rule" />
+            <h1 className="page-hero__title">Tell us about <em>your home.</em></h1>
+            <p className="page-hero__sub">
+              Five short steps. No pricing is calculated here — we review your details and
+              come back to confirm scope and cost.
+            </p>
+          </div>
         </div>
       </section>
 
-      <section className="quote-form-section">
-        <div className="container">
+      <section className="qform surf-ivory sec-lg">
+        <div className="container container--narrow">
           <ScrollReveal>
             {/* Progress */}
-            <nav className="quote-progress" aria-label="Quote form progress">
-              {steps.map((s, i) => (
-                <div key={s} className={`quote-progress__step${step > i + 1 ? ' quote-progress__step--done' : step === i + 1 ? ' quote-progress__step--active' : ''}`}>
-                  <span className="quote-progress__dot">{step > i + 1 ? '✓' : i + 1}</span>
-                  <span className="quote-progress__label">{s}</span>
-                </div>
-              ))}
+            <nav className="qprog" aria-label="Form progress">
+              {stepNames.map((label, i) => {
+                const n = (i + 1) as Step
+                const state = n < step ? 'done' : n === step ? 'now' : 'todo'
+                return (
+                  <button
+                    key={label}
+                    type="button"
+                    className={`qprog__item qprog__item--${state}`}
+                    onClick={() => n < step && setStep(n)}
+                    disabled={n > step}
+                    aria-current={n === step ? 'step' : undefined}
+                  >
+                    <span className="qprog__bar" />
+                    <span className="qprog__label">{label}</span>
+                  </button>
+                )
+              })}
             </nav>
 
-            <div className="quote-card">
+            <form
+              className="qcard"
+              noValidate
+              onSubmit={e => {
+                e.preventDefault()
+                if (step === 5) submit()
+                else next()
+              }}
+            >
+              <p className="qcard__count">Step {step} of 5</p>
+
               {/* Honeypot */}
               <input
-                type="text"
-                name="website"
-                value={form.honeypot}
+                type="text" tabIndex={-1} autoComplete="off" className="qhp"
+                aria-hidden="true" value={form.honeypot}
                 onChange={e => set('honeypot', e.target.value)}
-                tabIndex={-1}
-                aria-hidden="true"
-                style={{ position: 'absolute', opacity: 0, pointerEvents: 'none' }}
               />
 
-              {/* Step 1 — Service */}
               {step === 1 && (
-                <fieldset className="quote-step">
-                  <legend className="quote-step__legend">Which service are you looking for?</legend>
-                  <div className="quote-options">
+                <fieldset className="qstep">
+                  <legend className="qstep__q">Which service are you interested in?</legend>
+                  <div className="qchoices">
                     {['House Cleaning', 'Apartment Cleaning', 'Recurring Cleaning', 'Not sure yet'].map(s => (
-                      <label key={s} className={`quote-option${form.service === s ? ' quote-option--active' : ''}`}>
-                        <input type="radio" name="service" value={s} checked={form.service === s} onChange={() => set('service', s)} />
-                        {s}
-                      </label>
+                      <button
+                        key={s} type="button"
+                        className={`qchoice${form.service === s ? ' qchoice--on' : ''}`}
+                        onClick={() => set('service', s)}
+                      >{s}</button>
                     ))}
                   </div>
-                  {errors.service && <p className="quote-error" role="alert">{errors.service}</p>}
+                  {errors.service && <p className="qerr">{errors.service}</p>}
                 </fieldset>
               )}
 
-              {/* Step 2 — Home */}
               {step === 2 && (
-                <fieldset className="quote-step">
-                  <legend className="quote-step__legend">Tell us about your home.</legend>
-                  <div className="quote-field-group">
-                    <div className="quote-field">
-                      <label className="quote-label">Home type</label>
-                      <div className="quote-options">
-                        {['House', 'Apartment', 'Condo', 'Townhouse'].map(t => (
-                          <label key={t} className={`quote-option${form.homeType === t ? ' quote-option--active' : ''}`}>
-                            <input type="radio" name="homeType" value={t} checked={form.homeType === t} onChange={() => set('homeType', t)} />
-                            {t}
-                          </label>
-                        ))}
-                      </div>
-                      {errors.homeType && <p className="quote-error" role="alert">{errors.homeType}</p>}
-                    </div>
-                    <div className="quote-row">
-                      <div className="quote-field">
-                        <label className="quote-label" htmlFor="bedrooms">Bedrooms</label>
-                        <select id="bedrooms" className="quote-select" value={form.bedrooms} onChange={e => set('bedrooms', e.target.value)}>
-                          <option value="">Select</option>
-                          {['Studio', '1', '2', '3', '4', '5+'].map(n => <option key={n} value={n}>{n}</option>)}
-                        </select>
-                        {errors.bedrooms && <p className="quote-error" role="alert">{errors.bedrooms}</p>}
-                      </div>
-                      <div className="quote-field">
-                        <label className="quote-label" htmlFor="bathrooms">Bathrooms</label>
-                        <select id="bathrooms" className="quote-select" value={form.bathrooms} onChange={e => set('bathrooms', e.target.value)}>
-                          <option value="">Select</option>
-                          {['1', '1.5', '2', '2.5', '3', '3+'].map(n => <option key={n} value={n}>{n}</option>)}
-                        </select>
-                      </div>
-                    </div>
+                <fieldset className="qstep">
+                  <legend className="qstep__q">Tell us about the space.</legend>
+
+                  <label className="qlabel">Home type</label>
+                  <div className="qchoices">
+                    {['House', 'Apartment', 'Condo'].map(t => (
+                      <button key={t} type="button"
+                        className={`qchoice${form.homeType === t ? ' qchoice--on' : ''}`}
+                        onClick={() => set('homeType', t)}
+                      >{t}</button>
+                    ))}
+                  </div>
+                  {errors.homeType && <p className="qerr">{errors.homeType}</p>}
+
+                  <label className="qlabel">Bedrooms</label>
+                  <div className="qchoices">
+                    {['1', '2', '3', '4', '5+'].map(n => (
+                      <button key={n} type="button"
+                        className={`qchoice qchoice--sm${form.bedrooms === n ? ' qchoice--on' : ''}`}
+                        onClick={() => set('bedrooms', n)}
+                      >{n}</button>
+                    ))}
+                  </div>
+                  {errors.bedrooms && <p className="qerr">{errors.bedrooms}</p>}
+
+                  <label className="qlabel">Bathrooms <span className="qopt">(optional)</span></label>
+                  <div className="qchoices">
+                    {['1', '2', '3', '4+'].map(n => (
+                      <button key={n} type="button"
+                        className={`qchoice qchoice--sm${form.bathrooms === n ? ' qchoice--on' : ''}`}
+                        onClick={() => set('bathrooms', n)}
+                      >{n}</button>
+                    ))}
                   </div>
                 </fieldset>
               )}
 
-              {/* Step 3 — Frequency & Location */}
               {step === 3 && (
-                <fieldset className="quote-step">
-                  <legend className="quote-step__legend">How often, and where?</legend>
-                  <div className="quote-field-group">
-                    <div className="quote-field">
-                      <label className="quote-label">Cleaning frequency</label>
-                      <div className="quote-options">
-                        {['One-time', 'Weekly', 'Bi-weekly', 'Monthly', 'Not sure yet'].map(f => (
-                          <label key={f} className={`quote-option${form.frequency === f ? ' quote-option--active' : ''}`}>
-                            <input type="radio" name="frequency" value={f} checked={form.frequency === f} onChange={() => set('frequency', f)} />
-                            {f}
-                          </label>
-                        ))}
-                      </div>
-                      {errors.frequency && <p className="quote-error" role="alert">{errors.frequency}</p>}
-                    </div>
-                    <div className="quote-field">
-                      <label className="quote-label" htmlFor="area">Your area or postal code</label>
-                      <input
-                        id="area"
-                        type="text"
-                        className="quote-input"
-                        placeholder="e.g. Beltline, T2P 1A1"
-                        value={form.area}
-                        onChange={e => set('area', e.target.value)}
-                      />
-                      {errors.area && <p className="quote-error" role="alert">{errors.area}</p>}
-                    </div>
+                <fieldset className="qstep">
+                  <legend className="qstep__q">How often would you like us?</legend>
+                  <div className="qchoices">
+                    {['One-time clean', 'Weekly', 'Bi-weekly', 'Monthly', 'Still deciding'].map(f => (
+                      <button key={f} type="button"
+                        className={`qchoice${form.frequency === f ? ' qchoice--on' : ''}`}
+                        onClick={() => set('frequency', f)}
+                      >{f}</button>
+                    ))}
                   </div>
+                  {errors.frequency && <p className="qerr">{errors.frequency}</p>}
                 </fieldset>
               )}
 
-              {/* Step 4 — Preferences */}
               {step === 4 && (
-                <fieldset className="quote-step">
-                  <legend className="quote-step__legend">Any preferences or priorities?</legend>
-                  <div className="quote-field-group">
-                    <div className="quote-field">
-                      <label className="quote-label" htmlFor="preferredDate">Preferred date (optional)</label>
-                      <input
-                        id="preferredDate"
-                        type="date"
-                        className="quote-input"
-                        value={form.preferredDate}
-                        onChange={e => set('preferredDate', e.target.value)}
-                        min={new Date().toISOString().split('T')[0]}
-                      />
-                    </div>
-                    <div className="quote-field">
-                      <label className="quote-label" htmlFor="notes">Notes or priorities</label>
-                      <textarea
-                        id="notes"
-                        className="quote-textarea"
-                        rows={4}
-                        placeholder="e.g. We have a dog, focus on bathrooms and kitchen, allergic to strong scents…"
-                        value={form.notes}
-                        onChange={e => set('notes', e.target.value)}
-                      />
-                    </div>
-                  </div>
+                <fieldset className="qstep">
+                  <legend className="qstep__q">Location and timing.</legend>
+
+                  <label className="qlabel" htmlFor="q-area">Area or postal code</label>
+                  <input id="q-area" type="text" className="qinput" placeholder="e.g. Beltline, or T2P"
+                    value={form.area} onChange={e => set('area', e.target.value)} />
+                  {errors.area && <p className="qerr">{errors.area}</p>}
+
+                  <label className="qlabel" htmlFor="q-date">Preferred date <span className="qopt">(optional)</span></label>
+                  <input id="q-date" type="date" className="qinput"
+                    value={form.preferredDate} onChange={e => set('preferredDate', e.target.value)} />
+
+                  <label className="qlabel" htmlFor="q-notes">Anything else we should know? <span className="qopt">(optional)</span></label>
+                  <textarea id="q-notes" className="qinput qtextarea" rows={4}
+                    placeholder="Pets, access arrangements, areas to prioritise, product sensitivities…"
+                    value={form.notes} onChange={e => set('notes', e.target.value)} />
                 </fieldset>
               )}
 
-              {/* Step 5 — Contact */}
               {step === 5 && (
-                <fieldset className="quote-step">
-                  <legend className="quote-step__legend">How should we reach you?</legend>
-                  <div className="quote-field-group">
-                    <div className="quote-row">
-                      <div className="quote-field">
-                        <label className="quote-label" htmlFor="name">Full name *</label>
-                        <input id="name" type="text" className="quote-input" value={form.name} onChange={e => set('name', e.target.value)} placeholder="Your name" autoComplete="name" />
-                        {errors.name && <p className="quote-error" role="alert">{errors.name}</p>}
-                      </div>
-                    </div>
-                    <div className="quote-row">
-                      <div className="quote-field">
-                        <label className="quote-label" htmlFor="email">Email *</label>
-                        <input id="email" type="email" className="quote-input" value={form.email} onChange={e => set('email', e.target.value)} placeholder="you@example.com" autoComplete="email" />
-                        {errors.email && <p className="quote-error" role="alert">{errors.email}</p>}
-                      </div>
-                      <div className="quote-field">
-                        <label className="quote-label" htmlFor="phone">Phone (optional)</label>
-                        <input id="phone" type="tel" className="quote-input" value={form.phone} onChange={e => set('phone', e.target.value)} placeholder="+1 403 000 0000" autoComplete="tel" />
-                      </div>
-                    </div>
-                    <div className="quote-field">
-                      <label className="quote-label">Preferred contact method</label>
-                      <div className="quote-options">
-                        {['email', 'phone', 'either'].map(p => (
-                          <label key={p} className={`quote-option${form.contactPref === p ? ' quote-option--active' : ''}`}>
-                            <input type="radio" name="contactPref" value={p} checked={form.contactPref === p} onChange={() => set('contactPref', p)} />
-                            {p.charAt(0).toUpperCase() + p.slice(1)}
-                          </label>
-                        ))}
-                      </div>
-                    </div>
-                    <label className="quote-consent">
-                      <input type="checkbox" checked={form.consent} onChange={e => set('consent', e.target.checked)} />
-                      <span>I agree to be contacted by Leads Cleaning regarding my enquiry. We won't share your details with third parties.</span>
-                    </label>
-                    {errors.consent && <p className="quote-error" role="alert">{errors.consent}</p>}
-                    <p className="quote-mailto-note">
-                      Submitting will open your default email app with your enquiry pre-filled, addressed to Leads Cleaning. No data is submitted directly through this form.
-                    </p>
+                <fieldset className="qstep">
+                  <legend className="qstep__q">How can we reach you?</legend>
+
+                  <label className="qlabel" htmlFor="q-name">Name</label>
+                  <input id="q-name" type="text" className="qinput" autoComplete="name"
+                    value={form.name} onChange={e => set('name', e.target.value)} />
+                  {errors.name && <p className="qerr">{errors.name}</p>}
+
+                  <label className="qlabel" htmlFor="q-email">Email</label>
+                  <input id="q-email" type="email" className="qinput" autoComplete="email"
+                    value={form.email} onChange={e => set('email', e.target.value)} />
+                  {errors.email && <p className="qerr">{errors.email}</p>}
+
+                  <label className="qlabel" htmlFor="q-phone">Phone <span className="qopt">(optional)</span></label>
+                  <input id="q-phone" type="tel" className="qinput" autoComplete="tel"
+                    value={form.phone} onChange={e => set('phone', e.target.value)} />
+
+                  <label className="qlabel">Preferred contact method</label>
+                  <div className="qchoices">
+                    {['email', 'phone'].map(p => (
+                      <button key={p} type="button"
+                        className={`qchoice qchoice--sm${form.contactPref === p ? ' qchoice--on' : ''}`}
+                        onClick={() => set('contactPref', p)}
+                      >{p === 'email' ? 'Email' : 'Phone'}</button>
+                    ))}
                   </div>
+
+                  <label className="qconsent">
+                    <input type="checkbox" checked={form.consent}
+                      onChange={e => set('consent', e.target.checked)} />
+                    <span>
+                      I'm happy for Leads Cleaning to contact me about this enquiry.
+                      Your details are used only to respond to this request.
+                    </span>
+                  </label>
+                  {errors.consent && <p className="qerr">{errors.consent}</p>}
+
+                  <p className="qnote">
+                    Sending opens your own email app with these details filled in — you
+                    press send. Nothing is transmitted from this page.
+                  </p>
                 </fieldset>
               )}
 
-              {/* Navigation */}
-              <div className="quote-nav">
+              <div className="qactions">
                 {step > 1 && (
-                  <button type="button" className="quote-back" onClick={prev}>← Back</button>
+                  <button type="button" className="btn btn-ghost-dark" onClick={prev}>Back</button>
                 )}
-                {step < 5 ? (
-                  <button type="button" className="btn btn-primary quote-next" onClick={next}>Continue</button>
-                ) : (
-                  <button type="button" className="btn btn-primary quote-next" onClick={submit}>Open Email App →</button>
-                )}
+                <button type="submit" className="btn btn-primary qactions__next">
+                  {step === 5 ? 'Send My Request' : 'Continue'}
+                </button>
               </div>
-            </div>
+            </form>
+
+            <aside className="qaside">
+              <p>Prefer to talk it through?</p>
+              <a href="tel:+14036070581" className="qaside__phone">{CONTACT_PHONE}</a>
+            </aside>
           </ScrollReveal>
         </div>
       </section>

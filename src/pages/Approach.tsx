@@ -1,89 +1,105 @@
 import { Link } from 'react-router-dom'
 import ScrollReveal from '../components/ScrollReveal'
+import Photo from '../components/Photo'
 import './Approach.css'
-
-const IMG = (name: string, ext = 'webp') => `./assets/photos/${name}.${ext}`
 
 const steps = [
   {
     n: '01',
-    title: 'Tell us about your space',
-    desc: 'Use our quote form to share your home type, size, what areas matter most, and any specific preferences or sensitivities. The more we understand upfront, the better we can tailor your visit.',
+    title: 'Request a Quote',
+    desc: 'Use the quote form to share your home type, size, the areas that matter most, and any preferences or sensitivities. The more we understand up front, the better the visit can be tailored.',
     img: 'cleaning-supplies',
-    alt: 'Cleaning supplies prepared and ready',
+    alt: 'Cleaning supplies prepared and ready for a visit',
   },
   {
     n: '02',
-    title: 'Confirm your scope',
-    desc: 'We\'ll follow up to talk through what\'s included, confirm pricing, and agree on a clear scope before anything is booked. No assumptions, no surprises.',
+    title: 'Confirm Your Cleaning',
+    desc: 'We follow up to talk through what is included, confirm pricing and agree a clear scope before anything is booked. No assumptions, and nothing decided on the day.',
     img: 'kitchen-counter-cleaning',
-    alt: 'Clean kitchen counter — the result of careful scope confirmation',
+    alt: 'Clean kitchen counter — the result of a clearly agreed scope',
   },
   {
     n: '03',
-    title: 'We clean thoughtfully',
-    desc: 'On the day of your visit, we work systematically through your home — attending to each area with the same attentiveness, whether it\'s a first-time deep clean or a regular maintenance visit.',
+    title: 'Professional Cleaning',
+    desc: 'On the day, we work systematically through the home, giving each area the same attentiveness — whether it is a first-time clean or a regular maintenance visit.',
     img: 'cabinet-detail-cleaning',
-    alt: 'Cabinet details being carefully cleaned',
+    alt: 'Cabinet fronts being carefully cleaned',
   },
   {
     n: '04',
-    title: 'Come home to refreshed spaces',
-    desc: 'You return to a home that\'s been genuinely cared for. For recurring clients, this becomes the new normal — a consistently maintained home that requires nothing from you.',
+    title: 'Enjoy Your Space',
+    desc: 'You return to a home that has been genuinely cared for. For recurring clients this becomes the baseline — a consistently maintained home that asks nothing of you.',
     img: 'hero-calgary-living-room',
-    alt: 'Beautiful clean Calgary living room',
+    alt: 'Calm, beautifully maintained living room',
   },
+]
+
+const principles = [
+  { title: 'Agreed before begun', desc: 'Scope is settled in advance so expectations match on both sides.' },
+  { title: 'Unhurried by default', desc: 'Rushing is how detail gets missed. We plan time realistically.' },
+  { title: 'Consistent standards', desc: 'The same checklist and the same care, visit after visit.' },
+  { title: 'Easy to adjust', desc: 'Frequency, scope and scheduling can change as your needs do.' },
 ]
 
 export default function Approach() {
   return (
     <div className="approach-page">
-      <section className="page-hero page-hero--limestone">
-        <div className="container">
-          <p className="eyebrow">How We Work</p>
-          <h1 className="page-hero__title">An approach built<br /><em>on clarity and care.</em></h1>
-          <p className="page-hero__sub">From first enquiry to a consistently clean home — here's what to expect.</p>
+
+      <section className="page-hero page-hero--split surf-ivory">
+        <div className="container page-hero__grid">
+          <div>
+            <span className="eyebrow page-hero__eyebrow">How We Work</span>
+            <span className="rule" />
+            <h1 className="page-hero__title">An approach built <em>on clarity and care.</em></h1>
+            <p className="page-hero__sub">
+              From the first enquiry through to a consistently clean home — here is
+              exactly what to expect at each stage.
+            </p>
+          </div>
+          <div className="page-hero__panel">
+            <Photo name="living-room-vacuuming" alt="Living room being carefully vacuumed" eager className="ar-landscape" />
+          </div>
         </div>
       </section>
 
-      <section className="approach-timeline">
+      {/* Connected timeline */}
+      <section className="timeline surf-limestone sec-lg">
         <div className="container">
-          {steps.map((step, i) => (
-            <div key={step.n} className={`approach-tl-row${i % 2 !== 0 ? ' approach-tl-row--reverse' : ''}`}>
-              <ScrollReveal className="approach-tl-photo-wrap">
-                <picture>
-                  <source srcSet={IMG(step.img)} type="image/webp" />
-                  <img src={IMG(step.img, 'jpg')} alt={step.alt} className="approach-tl-photo" loading={i === 0 ? 'eager' : 'lazy'} />
-                </picture>
-              </ScrollReveal>
-              <ScrollReveal delay={150} className="approach-tl-text">
-                <span className="approach-tl-num">{step.n}</span>
-                <h2 className="approach-tl-title">{step.title}</h2>
-                <p className="approach-tl-desc">{step.desc}</p>
-              </ScrollReveal>
-            </div>
-          ))}
+          <ol className="timeline__list">
+            {steps.map((s, i) => (
+              <li key={s.n} className={`timeline__row${i % 2 !== 0 ? ' timeline__row--reverse' : ''}`}>
+                <ScrollReveal className="timeline__photo">
+                  <Photo name={s.img} alt={s.alt} className="ph--zoom ar-landscape" eager={i === 0} />
+                </ScrollReveal>
+
+                <ScrollReveal delay={130} className="timeline__text">
+                  <div className="timeline__marker" aria-hidden="true">
+                    <span className="timeline__dot" />
+                    <span className="timeline__n">{s.n}</span>
+                  </div>
+                  <h2 className="timeline__title">{s.title}</h2>
+                  <p className="timeline__desc">{s.desc}</p>
+                </ScrollReveal>
+              </li>
+            ))}
+          </ol>
         </div>
       </section>
 
-      <section className="approach-principles">
+      {/* Principles */}
+      <section className="principles surf-forest sec-md">
         <div className="container">
-          <ScrollReveal>
-            <p className="eyebrow" style={{ textAlign: 'center' }}>Our Principles</p>
-            <h2 className="approach-principles__heading">A few things we commit to.</h2>
+          <ScrollReveal className="principles__head">
+            <span className="eyebrow">What Stays Constant</span>
+            <h2 className="principles__heading">The principles behind every visit.</h2>
           </ScrollReveal>
-          <div className="approach-principles__grid">
-            {[
-              { icon: '◦', title: 'We confirm scope before we start', desc: 'No visit begins without clear agreement on what\'s included. This protects both of us.' },
-              { icon: '◦', title: 'We bring what we need', desc: 'Supplies and equipment arrive with us. There\'s nothing you need to prepare or provide.' },
-              { icon: '◦', title: 'We work without disruption', desc: 'You don\'t need to be home. We\'re flexible around your schedule and access preferences.' },
-              { icon: '◦', title: 'We\'re easy to reach', desc: 'Questions or changes? Get in touch by phone or message and we\'ll respond promptly.' },
-            ].map((p, i) => (
-              <ScrollReveal key={p.title} delay={i * 80}>
-                <div className="approach-principle">
-                  <span className="approach-principle__icon" aria-hidden="true">{p.icon}</span>
-                  <h3 className="approach-principle__title">{p.title}</h3>
-                  <p className="approach-principle__desc">{p.desc}</p>
+
+          <div className="principles__grid">
+            {principles.map((p, i) => (
+              <ScrollReveal key={p.title} delay={i * 70}>
+                <div className="principle">
+                  <h3 className="principle__title">{p.title}</h3>
+                  <p className="principle__desc">{p.desc}</p>
                 </div>
               </ScrollReveal>
             ))}
@@ -91,16 +107,17 @@ export default function Approach() {
         </div>
       </section>
 
-      <section className="page-cta">
+      <section className="page-cta surf-ivory">
         <div className="container page-cta__inner">
           <ScrollReveal>
-            <h2 className="page-cta__heading">Ready to get started?</h2>
-            <p className="page-cta__sub">Share a few details about your home and we'll take it from there.</p>
-            <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
+            <span className="eyebrow">Start Here</span>
+            <h2 className="page-cta__heading">Ready when you are.</h2>
+            <p className="page-cta__sub lede">
+              Share a few details about your home and we will take it from there.
+            </p>
+            <div className="page-cta__actions">
               <Link to="/quote" className="btn btn-primary">Request a Quote</Link>
-              <Link to="/faq" className="btn" style={{ background: 'transparent', border: '1px solid var(--border)', color: 'var(--evergreen)' }}>
-                View FAQs
-              </Link>
+              <Link to="/services" className="btn btn-ghost-dark">Browse Services</Link>
             </div>
           </ScrollReveal>
         </div>

@@ -1,4 +1,5 @@
-import { HashRouter, Routes, Route } from 'react-router-dom'
+import { useEffect } from 'react'
+import { HashRouter, Routes, Route, useLocation } from 'react-router-dom'
 import Nav from './components/Nav'
 import Footer from './components/Footer'
 import Home from './pages/Home'
@@ -9,9 +10,24 @@ import Results from './pages/Results'
 import FAQ from './pages/FAQ'
 import Quote from './pages/Quote'
 
+function ScrollManager() {
+  const { pathname, hash } = useLocation()
+
+  useEffect(() => {
+    if (hash) {
+      const el = document.getElementById(hash.slice(1))
+      if (el) { el.scrollIntoView({ behavior: 'smooth', block: 'start' }); return }
+    }
+    window.scrollTo(0, 0)
+  }, [pathname, hash])
+
+  return null
+}
+
 export default function App() {
   return (
     <HashRouter>
+      <ScrollManager />
       <Nav />
       <main id="main-content">
         <Routes>
